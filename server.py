@@ -1,4 +1,4 @@
-﻿from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify
 import yt_dlp
 import os
 
@@ -23,8 +23,12 @@ def extract():
                 f.write(cookies_content)
             cookiefile = '/tmp/cookies.txt'
         
+        # GÜNCELLENMİŞ AYARLAR (NATIVE PLAYER İÇİN OPTİMİZE EDİLDİ)
         ydl_opts = {
-            'format': 'bestvideo[height<=1080]+bestaudio/best',
+            # 1. Öncelik: MP4 formatında, video+ses birleşik, max 1080p
+            # 2. Öncelik: Herhangi bir MP4
+            # Bu, 1080p yoksa 720p, yoksa 360p verir ama kesinlikle MP4 verir.
+            'format': 'best[ext=mp4][height<=1080]/best[ext=mp4]/best',
             'quiet': True,
             'no_warnings': True,
             'extract_flat': False,
