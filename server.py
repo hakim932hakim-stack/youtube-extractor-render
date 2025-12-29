@@ -23,11 +23,12 @@ def extract():
                 f.write(cookies_content)
             cookiefile = '/tmp/cookies.txt'
         
-        # GÜNCELLENMİŞ AYARLAR (NATIVE PLAYER İÇİN OPTİMİZE EDİLDİ)
+        # --- OPTİMİZE EDİLMİŞ NATIVE PLAYER AYARLARI ---
         ydl_opts = {
-            # 1. Öncelik: MP4 formatında, video+ses birleşik, max 1080p
-            # 2. Öncelik: Herhangi bir MP4
-            # Bu, 1080p yoksa 720p, yoksa 360p verir ama kesinlikle MP4 verir.
+            # 1. 1080p veya altı, MP4 formatında, video+ses birleşik (hazır stream)
+            # 2. Eğer o yoksa, herhangi bir boyutta MP4 formatında video+ses
+            # 3. O da yoksa en iyi herhangi bir format
+            # Bu sıralama Native Player'ın hata vermeden en iyi kaliteyi açmasını sağlar.
             'format': 'best[ext=mp4][height<=1080]/best[ext=mp4]/best',
             'quiet': True,
             'no_warnings': True,
@@ -38,13 +39,16 @@ def extract():
             ydl_opts['cookiefile'] = cookiefile
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            # download=False çünkü sadece URL istiyoruz
             info = ydl.extract_info(f'https://youtube.com/watch?v={video_id}', download=False)
             
             return jsonify({
                 'success': True,
                 'url': info['url'],
                 'title': info.get('title', ''),
-                'duration': info.get('duration', 0)
+                'duration': info.get('duration', 0),
+                # Debug için kalite bilgisini de dönelim
+                'quality': info.get('format_note', 'unknown') 
             })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
